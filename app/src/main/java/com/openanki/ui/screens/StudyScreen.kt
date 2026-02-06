@@ -67,7 +67,7 @@ fun StudyScreen(
         val progress = (uiState.index + 1).coerceAtMost(uiState.cards.size)
         val cardsLeft = uiState.cards.size - uiState.index
         Text(
-            text = "$progress / ${uiState.cards.size}  \u2022  $cardsLeft cards remaining",
+            text = "$progress / ${uiState.cards.size}  \u2022  $cardsLeft ${if (cardsLeft == 1) "card" else "cards"} remaining",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

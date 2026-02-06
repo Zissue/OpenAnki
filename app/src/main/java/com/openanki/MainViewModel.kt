@@ -102,13 +102,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             when (grade) {
                 Grade.AGAIN -> {
-                    val reinsertOffset = maxOf((remaining * 0.2).toInt(), 1)
+                    val reinsertOffset = maxOf((remaining * AGAIN_REINSERT_RATIO).toInt(), 1)
                     val card = mutableCards[state.index]
                     val safePos = (state.index + 1 + reinsertOffset).coerceAtMost(mutableCards.size)
                     mutableCards.add(safePos, card)
                 }
                 Grade.HARD -> {
-                    val reinsertOffset = maxOf((remaining * 0.45).toInt(), 1)
+                    val reinsertOffset = maxOf((remaining * HARD_REINSERT_RATIO).toInt(), 1)
                     val card = mutableCards[state.index]
                     val safePos = (state.index + 1 + reinsertOffset).coerceAtMost(mutableCards.size)
                     mutableCards.add(safePos, card)
@@ -161,5 +161,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    companion object {
+        /** Fraction of remaining queue at which AGAIN cards reappear. */
+        private const val AGAIN_REINSERT_RATIO = 0.2
+        /** Fraction of remaining queue at which HARD cards reappear. */
+        private const val HARD_REINSERT_RATIO = 0.45
     }
 }

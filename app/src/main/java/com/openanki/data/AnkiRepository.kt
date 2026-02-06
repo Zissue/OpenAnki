@@ -38,7 +38,8 @@ class AnkiRepository(private val application: Application) {
     fun eraseDeck(deck: Deck) {
         val deckDbFile = File(deck.dbPath)
         val enclosingDir = deckDbFile.parentFile ?: return
-        if (enclosingDir.isDirectory) {
+        // Only allow deletion within the app-managed decks directory
+        if (enclosingDir.isDirectory && enclosingDir.absolutePath.startsWith(decksDir.absolutePath)) {
             enclosingDir.deleteRecursively()
         }
     }
