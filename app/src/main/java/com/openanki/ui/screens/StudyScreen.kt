@@ -43,6 +43,7 @@ fun StudyScreen(
     onFlip: () -> Unit,
     onGrade: (Grade) -> Unit,
     onBack: () -> Unit,
+    onEndSession: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -52,6 +53,11 @@ fun StudyScreen(
         TopBar(uiState.selectedDeck?.name ?: "Study", onBack)
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (uiState.reviewDone) {
+            SessionSummary(uiState, onEndSession)
+            return
+        }
+
         val card = uiState.cards.getOrNull(uiState.index)
         if (card == null) {
             EmptyStudyState(onBack)
@@ -59,8 +65,9 @@ fun StudyScreen(
         }
 
         val progress = (uiState.index + 1).coerceAtMost(uiState.cards.size)
+        val cardsLeft = uiState.cards.size - uiState.index
         Text(
-            text = "$progress / ${uiState.cards.size}",
+            text = "$progress / ${uiState.cards.size}  \u2022  $cardsLeft cards remaining",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -182,6 +189,42 @@ private fun GradeRow(onGrade: (Grade) -> Unit) {
             modifier = Modifier.weight(1f)
         ) {
             Text("Easy")
+        }
+    }
+}
+
+@Composable
+private fun SessionSummary(uiState: UiState, onEndSession: () -> Unit) {
+    val totalReviewed = uiState.gradeCounts.values.sum()
+    val againCount = uiState.gradeCounts[Grade.AGAIN] ?: 0
+    val hardCount = uiState.gradeCounts[Grade.HARD] ?: 0
+    val goodCount = uiState.gradeCounts[Grade.GOOD] ?: 0
+    val easyCount = uiState.gradeCounts[Grade.EASY] ?: 0
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = uiState.selectedDeck?.name ?: "Session",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "All done! You reviewed $totalReviewed cards.",
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Again: $againCount  \u2022  Hard: $hardCount  \u2022  Good: $goodCount  \u2022  Easy: $easyCount",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onEndSession) {
+            Text("Return to Decks")
         }
     }
 }
