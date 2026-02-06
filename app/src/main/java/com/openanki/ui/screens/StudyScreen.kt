@@ -36,6 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.openanki.Grade
 import com.openanki.UiState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun StudyScreen(
@@ -117,6 +121,15 @@ fun StudyScreen(
                             text = card.back.ifBlank { "(Empty back)" },
                             style = MaterialTheme.typography.bodyLarge
                         )
+                        val oaTagsFromApkg = card.apkgProperties["tags"]?.trim().orEmpty()
+                        if (oaTagsFromApkg.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "\uD83C\uDFF7\uFE0F " + oaTagsFromApkg,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -162,33 +175,44 @@ private fun TopBar(title: String, onBack: () -> Unit) {
 
 @Composable
 private fun GradeRow(onGrade: (Grade) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        OutlinedButton(
-            onClick = { onGrade(Grade.AGAIN) },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("Again")
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val oaGradeTextSize = when {
+            maxWidth < 320.dp -> 11.sp
+            maxWidth < 400.dp -> 12.sp
+            else -> 14.sp
         }
-        OutlinedButton(
-            onClick = { onGrade(Grade.HARD) },
-            modifier = Modifier.weight(1f)
+        val oaAgainBorderTint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+        val oaHardBorderTint = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.65f)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Hard")
-        }
-        Button(
-            onClick = { onGrade(Grade.GOOD) },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("Good")
-        }
-        Button(
-            onClick = { onGrade(Grade.EASY) },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text("Easy")
+            OutlinedButton(
+                onClick = { onGrade(Grade.AGAIN) },
+                modifier = Modifier.weight(1f),
+                border = BorderStroke(1.dp, oaAgainBorderTint)
+            ) {
+                Text("Again", fontSize = oaGradeTextSize, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            OutlinedButton(
+                onClick = { onGrade(Grade.HARD) },
+                modifier = Modifier.weight(1f),
+                border = BorderStroke(1.dp, oaHardBorderTint)
+            ) {
+                Text("Hard", fontSize = oaGradeTextSize, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Button(
+                onClick = { onGrade(Grade.GOOD) },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Good", fontSize = oaGradeTextSize, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Button(
+                onClick = { onGrade(Grade.EASY) },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Easy", fontSize = oaGradeTextSize, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }
