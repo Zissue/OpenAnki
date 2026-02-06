@@ -50,18 +50,25 @@ object AnkiDbReader {
         val db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
         db.use {
             val cursor = db.rawQuery(
-                "SELECT c.id, n.flds FROM cards c JOIN notes n ON c.nid = n.id WHERE c.did = ? ORDER BY c.id LIMIT ?",
+                "SELECT c.*, n.flds, n.tags, n.sfld FROM cards c JOIN notes n ON c.nid = n.id WHERE c.did = ? ORDER BY c.id LIMIT ?",
                 arrayOf(deckId.toString(), limit.toString())
             )
             cursor.use {
                 val cards = mutableListOf<Card>()
                 while (cursor.moveToNext()) {
-                    val id = cursor.getLong(0)
-                    val flds = cursor.getString(1)
+                    val id = cursor.getLong(cursor.getColumnIndex("id"))
+                    val flds = cursor.getString(cursor.getColumnIndex("flds"))
                     val parts = flds.split('\u001F')
                     val front = sanitizeCardField(parts.getOrNull(0).orEmpty())
                     val back = sanitizeCardField(parts.getOrNull(1).orEmpty())
-                    cards.add(Card(id, front, back))
+                    val additionalFields = parts.filterIndexed { idx, _ -> idx >= 2 }
+                        .map { seg -> sanitizeCardField(seg) }
+                    val cardProperties = buildMap {
+                        repeat(cursor.columnCount) { pos ->
+                            put(cursor.getColumnName(pos), cursor.getString(pos) ?: "")
+                        }
+                    }
+                    cards.add(Card(id, front, back, additionalFields, cardProperties))
                 }
                 return cards
             }

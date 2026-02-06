@@ -52,6 +52,11 @@ val OpenAnkiTypography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
+    labelMedium = TextStyle(
+        fontFamily = displayFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp
+    ),
     labelLarge = TextStyle(
         fontFamily = displayFont,
         fontWeight = FontWeight.Medium,
