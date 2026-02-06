@@ -23,7 +23,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
-import androidx.compose.foundation.shape.RoundedCornerShape as OaRoundedButtonShape
+import androidx.compose.foundation.shape.RoundedCornerShape as RoundedButtonCorners
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -113,7 +113,7 @@ fun DeckListScreen(
             Button(
                 onClick = onImport,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = OaRoundedButtonShape(16.dp)
+                shape = RoundedButtonCorners(16.dp)
             ) {
                 Icon(Icons.Outlined.FileOpen, contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))

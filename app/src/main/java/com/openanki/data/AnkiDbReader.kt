@@ -61,14 +61,14 @@ object AnkiDbReader {
                     val parts = flds.split('\u001F')
                     val front = sanitizeCardField(parts.getOrNull(0).orEmpty())
                     val back = sanitizeCardField(parts.getOrNull(1).orEmpty())
-                    val oaExtraFields = parts.filterIndexed { idx, _ -> idx >= 2 }
+                    val additionalFields = parts.filterIndexed { idx, _ -> idx >= 2 }
                         .map { seg -> sanitizeCardField(seg) }
-                    val oaRawProps = buildMap {
+                    val cardProperties = buildMap {
                         repeat(cursor.columnCount) { pos ->
                             put(cursor.getColumnName(pos), cursor.getString(pos) ?: "")
                         }
                     }
-                    cards.add(Card(id, front, back, oaExtraFields, oaRawProps))
+                    cards.add(Card(id, front, back, additionalFields, cardProperties))
                 }
                 return cards
             }
