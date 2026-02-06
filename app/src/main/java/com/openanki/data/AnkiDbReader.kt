@@ -1,0 +1,61 @@
+package com.openanki.data
+
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import com.openanki.model.Card
+import com.openanki.model.Deck
+import org.json.JSONObject
+
+object AnkiDbReader {
+    fun readDecks(dbPath: String): List<Deck> {
+        val db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
+        db.use {
+            val cursor = db.rawQuery("SELECT decks FROM col LIMIT 1", null)
+            cursor.use {
+                if (!cursor.moveToFirst()) return emptyList()
+                val json = cursor.getString(0)
+                val decksJson = JSONObject(json)
+                val decks = mutableListOf<Deck>()
+                val keys = decksJson.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val deckId = key.toLongOrNull() ?: continue
+                    val deckObj = decksJson.getJSONObject(key)
+                    val name = deckObj.optString("name", "Deck")
+                    val count = queryCount(db, deckId)
+                    decks.add(Deck(deckId, name, count, dbPath))
+                }
+                return decks
+            }
+        }
+    }
+
+    fun readCards(dbPath: String, deckId: Long, limit: Int): List<Card> {
+        val db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
+        db.use {
+            val cursor = db.rawQuery(
+                "SELECT c.id, n.flds FROM cards c JOIN notes n ON c.nid = n.id WHERE c.did = ? ORDER BY c.id LIMIT ?",
+                arrayOf(deckId.toString(), limit.toString())
+            )
+            cursor.use {
+                val cards = mutableListOf<Card>()
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(0)
+                    val flds = cursor.getString(1)
+                    val parts = flds.split('\u001F')
+                    val front = parts.getOrNull(0)?.trim().orEmpty()
+                    val back = parts.getOrNull(1)?.trim().orEmpty()
+                    cards.add(Card(id, front, back))
+                }
+                return cards
+            }
+        }
+    }
+
+    private fun queryCount(db: SQLiteDatabase, deckId: Long): Int {
+        val cursor: Cursor = db.rawQuery("SELECT COUNT(*) FROM cards WHERE did = ?", arrayOf(deckId.toString()))
+        cursor.use {
+            return if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        }
+    }
+}
