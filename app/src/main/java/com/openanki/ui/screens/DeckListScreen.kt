@@ -51,7 +51,7 @@ fun DeckListScreen(
     onSearchChanged: (String) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        BackgroundOrbs()
+        ZenBackdrop()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -132,7 +132,7 @@ private fun Header() {
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = "Minimal focus, deep recall.",
+            text = "Quiet focus, steady recall.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -178,8 +178,8 @@ private fun StatPill(label: String, value: String) {
 private fun DeckCard(deck: Deck, onOpen: () -> Unit, onRemove: () -> Unit) {
     val gradient = Brush.linearGradient(
         listOf(
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f)
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
         )
     )
     ElevatedCard(
@@ -196,7 +196,7 @@ private fun DeckCard(deck: Deck, onOpen: () -> Unit, onRemove: () -> Unit) {
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -242,7 +242,7 @@ private fun EmptyState(onImport: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Import any community .apkg file and start reviewing instantly.",
+            text = "Import a community .apkg file and begin a calm review flow.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -254,17 +254,35 @@ private fun EmptyState(onImport: () -> Unit) {
 }
 
 @Composable
-private fun BackgroundOrbs() {
+private fun ZenBackdrop() {
     Canvas(modifier = Modifier.fillMaxSize()) {
+        val ink = Color(0x1A5E6F64)
+        val sand = Color(0x2AECE4D6)
+        val centerX = size.width * 0.75f
+        val centerY = size.height * 0.2f
+
         drawCircle(
-            color = Color(0x33F2C14E),
-            radius = size.minDimension * 0.45f,
-            center = androidx.compose.ui.geometry.Offset(x = size.width * 0.9f, y = size.height * 0.1f)
-        )
-        drawCircle(
-            color = Color(0x33206D7D),
+            color = sand,
             radius = size.minDimension * 0.55f,
-            center = androidx.compose.ui.geometry.Offset(x = size.width * 0.1f, y = size.height * 0.85f)
+            center = androidx.compose.ui.geometry.Offset(x = centerX, y = centerY)
         )
+        drawCircle(
+            color = ink,
+            radius = size.minDimension * 0.35f,
+            center = androidx.compose.ui.geometry.Offset(x = size.width * 0.2f, y = size.height * 0.85f)
+        )
+
+        val stroke = 1.2f
+        val gap = size.height / 9f
+        var y = gap * 1.5f
+        while (y < size.height) {
+            drawLine(
+                color = Color(0x1A4A4F45),
+                start = androidx.compose.ui.geometry.Offset(x = size.width * 0.05f, y = y),
+                end = androidx.compose.ui.geometry.Offset(x = size.width * 0.95f, y = y),
+                strokeWidth = stroke
+            )
+            y += gap
+        }
     }
 }

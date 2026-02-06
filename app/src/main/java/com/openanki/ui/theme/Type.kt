@@ -16,11 +16,11 @@ private val provider = GoogleFont.Provider(
 )
 
 private val displayFont = FontFamily(
-    Font(googleFont = GoogleFont("Space Grotesk"), fontProvider = provider)
+    Font(googleFont = GoogleFont("Cormorant Garamond"), fontProvider = provider)
 )
 
 private val bodyFont = FontFamily(
-    Font(googleFont = GoogleFont("Literata"), fontProvider = provider)
+    Font(googleFont = GoogleFont("Source Sans 3"), fontProvider = provider)
 )
 
 val OpenAnkiTypography = Typography(
@@ -28,7 +28,7 @@ val OpenAnkiTypography = Typography(
         fontFamily = displayFont,
         fontWeight = FontWeight.SemiBold,
         fontSize = 34.sp,
-        letterSpacing = (-0.5).sp
+        letterSpacing = (-0.2).sp
     ),
     headlineSmall = TextStyle(
         fontFamily = displayFont,

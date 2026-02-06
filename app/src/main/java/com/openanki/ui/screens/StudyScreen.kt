@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,6 +84,11 @@ fun StudyScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .shadow(lift.dp, RoundedCornerShape(28.dp))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(28.dp)
+                )
                 .clickable { onFlip() },
             shape = RoundedCornerShape(28.dp)
         ) {
@@ -112,7 +118,7 @@ fun StudyScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Answer",
+                            text = "Reflection",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -147,7 +153,7 @@ fun StudyScreen(
             Spacer(modifier = Modifier.height(6.dp))
         }
         Text(
-            text = "Tap the card to reveal the answer.",
+            text = "Tap to reveal, breathe between cards.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -237,7 +243,7 @@ private fun SessionSummary(uiState: UiState, onEndSession: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "All done! You reviewed $totalReviewed cards.",
+            text = "Session complete. You reviewed $totalReviewed cards.",
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
