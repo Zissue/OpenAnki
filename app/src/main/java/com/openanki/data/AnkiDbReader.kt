@@ -7,6 +7,22 @@ import com.openanki.model.Deck
 import org.json.JSONObject
 
 object AnkiDbReader {
+    private val htmlLineBreakPattern = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)
+    private val htmlTagPattern = Regex("""<[^>]*>""")
+    private val entityMapping = mapOf(
+        "&amp;" to "&", "&lt;" to "<", "&gt;" to ">",
+        "&nbsp;" to " ", "&quot;" to "\""
+    )
+
+    private fun sanitizeCardField(raw: String): String {
+        var cleaned = htmlLineBreakPattern.replace(raw, "\n")
+        cleaned = htmlTagPattern.replace(cleaned, "")
+        for ((entity, replacement) in entityMapping) {
+            cleaned = cleaned.replace(entity, replacement)
+        }
+        return cleaned.trim()
+    }
+
     fun readDecks(dbPath: String): List<Deck> {
         val db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
         db.use {
@@ -43,8 +59,8 @@ object AnkiDbReader {
                     val id = cursor.getLong(0)
                     val flds = cursor.getString(1)
                     val parts = flds.split('\u001F')
-                    val front = parts.getOrNull(0)?.trim().orEmpty()
-                    val back = parts.getOrNull(1)?.trim().orEmpty()
+                    val front = sanitizeCardField(parts.getOrNull(0).orEmpty())
+                    val back = sanitizeCardField(parts.getOrNull(1).orEmpty())
                     cards.add(Card(id, front, back))
                 }
                 return cards

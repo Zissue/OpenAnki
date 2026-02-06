@@ -80,6 +80,12 @@ fun OpenAnkiApp() {
                     onGrade = { grade -> viewModel.gradeCard(grade) },
                     onBack = {
                         navController.popBackStack()
+                    },
+                    onDeleteDeck = { deck -> viewModel.removeDeck(deck) },
+                    onSearchChanged = { term -> viewModel.setDeckSearch(term) },
+                    onEndSession = {
+                        viewModel.clearStudySession()
+                        navController.popBackStack()
                     }
                 )
             }
@@ -117,13 +123,18 @@ private fun AppNavHost(
     onFlip: () -> Unit,
     onGrade: (Grade) -> Unit,
     onBack: () -> Unit,
+    onDeleteDeck: (Deck) -> Unit,
+    onSearchChanged: (String) -> Unit,
+    onEndSession: () -> Unit,
 ) {
     NavHost(navController = navController, startDestination = "decks") {
         composable("decks") {
             DeckListScreen(
                 uiState = uiState,
                 onImport = onImport,
-                onOpenDeck = onOpenDeck
+                onOpenDeck = onOpenDeck,
+                onDeleteDeck = onDeleteDeck,
+                onSearchChanged = onSearchChanged
             )
         }
         composable("study") {
@@ -131,7 +142,8 @@ private fun AppNavHost(
                 uiState = uiState,
                 onFlip = onFlip,
                 onGrade = onGrade,
-                onBack = onBack
+                onBack = onBack,
+                onEndSession = onEndSession
             )
         }
     }

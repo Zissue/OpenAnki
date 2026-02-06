@@ -34,4 +34,13 @@ class AnkiRepository(private val application: Application) {
     fun loadCards(deck: Deck, limit: Int = 200): List<Card> {
         return AnkiDbReader.readCards(deck.dbPath, deck.id, limit)
     }
+
+    fun eraseDeck(deck: Deck) {
+        val deckDbFile = File(deck.dbPath)
+        val enclosingDir = deckDbFile.parentFile ?: return
+        // Only allow deletion within the app-managed decks directory
+        if (enclosingDir.isDirectory && enclosingDir.absolutePath.startsWith(decksDir.absolutePath)) {
+            enclosingDir.deleteRecursively()
+        }
+    }
 }

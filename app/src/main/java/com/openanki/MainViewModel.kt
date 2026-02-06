@@ -24,6 +24,9 @@ data class UiState(
     val revealAnswer: Boolean = false,
     val isLoading: Boolean = false,
     val message: String? = null,
+    val deckSearchTerm: String = "",
+    val gradeCounts: Map<Grade, Int> = emptyMap(),
+    val reviewDone: Boolean = false,
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -70,9 +73,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(
                         isLoading = false,
                         selectedDeck = deck,
-                        cards = cards,
+                        cards = cards.shuffled(),
                         index = 0,
-                        revealAnswer = false
+                        revealAnswer = false,
+                        gradeCounts = emptyMap(),
+                        reviewDone = false
                     )
                 }
             } catch (e: Exception) {
@@ -89,12 +94,79 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun gradeCard(grade: Grade) {
         _uiState.update { state ->
-            val nextIndex = (state.index + 1).coerceAtMost(state.cards.size)
+            val updatedGradeCounts = state.gradeCounts.toMutableMap()
+            updatedGradeCounts[grade] = (updatedGradeCounts[grade] ?: 0) + 1
+
+            val mutableCards = state.cards.toMutableList()
+            val remaining = mutableCards.size - state.index - 1
+
+            when (grade) {
+                Grade.AGAIN -> {
+                    val reinsertOffset = maxOf((remaining * AGAIN_REINSERT_RATIO).toInt(), 1)
+                    val card = mutableCards[state.index]
+                    val safePos = (state.index + 1 + reinsertOffset).coerceAtMost(mutableCards.size)
+                    mutableCards.add(safePos, card)
+                }
+                Grade.HARD -> {
+                    val reinsertOffset = maxOf((remaining * HARD_REINSERT_RATIO).toInt(), 1)
+                    val card = mutableCards[state.index]
+                    val safePos = (state.index + 1 + reinsertOffset).coerceAtMost(mutableCards.size)
+                    mutableCards.add(safePos, card)
+                }
+                Grade.GOOD, Grade.EASY -> { /* card graduates, no reinsertion */ }
+            }
+
+            val nextIdx = state.index + 1
+            val sessionFinished = nextIdx >= mutableCards.size
+
             state.copy(
-                index = nextIndex,
+                cards = mutableCards,
+                index = nextIdx,
                 revealAnswer = false,
-                message = if (nextIndex >= state.cards.size) "Session complete" else state.message
+                gradeCounts = updatedGradeCounts,
+                reviewDone = sessionFinished,
+                message = if (sessionFinished) "Session complete" else state.message
             )
         }
+    }
+
+    fun clearStudySession() {
+        _uiState.update {
+            it.copy(
+                selectedDeck = null,
+                cards = emptyList(),
+                index = 0,
+                revealAnswer = false,
+                gradeCounts = emptyMap(),
+                reviewDone = false,
+                message = null
+            )
+        }
+    }
+
+    fun setDeckSearch(term: String) {
+        _uiState.update { it.copy(deckSearchTerm = term) }
+    }
+
+    fun removeDeck(deck: Deck) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isLoading = true, message = null) }
+            try {
+                repository.eraseDeck(deck)
+                val decks = repository.listDecks()
+                _uiState.update { it.copy(isLoading = false, decks = decks) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, message = e.message ?: "Deck removal failed")
+                }
+            }
+        }
+    }
+
+    companion object {
+        /** Fraction of remaining queue at which AGAIN cards reappear. */
+        private const val AGAIN_REINSERT_RATIO = 0.2
+        /** Fraction of remaining queue at which HARD cards reappear. */
+        private const val HARD_REINSERT_RATIO = 0.45
     }
 }

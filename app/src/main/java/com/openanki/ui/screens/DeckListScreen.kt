@@ -16,8 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -42,6 +46,8 @@ fun DeckListScreen(
     uiState: UiState,
     onImport: () -> Unit,
     onOpenDeck: (Deck) -> Unit,
+    onDeleteDeck: (Deck) -> Unit,
+    onSearchChanged: (String) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         BackgroundOrbs()
@@ -53,6 +59,15 @@ fun DeckListScreen(
             Header()
             Spacer(modifier = Modifier.height(16.dp))
             StatsRow(uiState)
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = uiState.deckSearchTerm,
+                onValueChange = onSearchChanged,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Filter decks\u2026") },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "Search decks") },
+                singleLine = true
+            )
             Spacer(modifier = Modifier.height(12.dp))
             uiState.message?.let {
                 Text(
@@ -72,12 +87,23 @@ fun DeckListScreen(
             if (uiState.decks.isEmpty() && !uiState.isLoading) {
                 EmptyState(onImport)
             } else {
+                val visibleDecks = if (uiState.deckSearchTerm.isBlank()) {
+                    uiState.decks
+                } else {
+                    uiState.decks.filter { d ->
+                        d.name.contains(uiState.deckSearchTerm, ignoreCase = true)
+                    }
+                }
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.decks, key = { it.id }) { deck ->
-                        DeckCard(deck = deck, onOpen = { onOpenDeck(deck) })
+                    items(visibleDecks, key = { it.id }) { deck ->
+                        DeckCard(
+                            deck = deck,
+                            onOpen = { onOpenDeck(deck) },
+                            onRemove = { onDeleteDeck(deck) }
+                        )
                     }
                 }
             }
@@ -147,7 +173,7 @@ private fun StatPill(label: String, value: String) {
 }
 
 @Composable
-private fun DeckCard(deck: Deck, onOpen: () -> Unit) {
+private fun DeckCard(deck: Deck, onOpen: () -> Unit, onRemove: () -> Unit) {
     val gradient = Brush.linearGradient(
         listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
@@ -188,6 +214,13 @@ private fun DeckCard(deck: Deck, onOpen: () -> Unit) {
             }
             TextButton(onClick = onOpen) {
                 Text("Study")
+            }
+            IconButton(onClick = onRemove) {
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = "Remove deck",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
